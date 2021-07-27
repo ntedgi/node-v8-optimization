@@ -1,0 +1,20 @@
+{
+  "name": "v8-optimization",
+  "version": "1.0.0",
+  "description": "",
+  "main": "example1.js",
+  "scripts": {
+    "opt": "node --trace-opt --trace-deopt example1.js",
+    "optout": "node --trace-opt --trace-deopt example1.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ntedgi/node-v8-optimization.git"
+  },
+  "author": "Naor Tedgi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ntedgi/node-v8-optimization/issues"
+  },
+  "homepage": "https://github.com/ntedgi/node-v8-optimization#readme"
+}
