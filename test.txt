@@ -1,1 +1,3 @@
-sdsds
+notes 
+1 . start with talking about property lookup 
+    
