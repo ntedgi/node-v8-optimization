@@ -1,3 +1,265 @@
-notes 
-1 . start with talking about property lookup 
-    
+    ~/d/node-v8-optimization    main !5 ?7 ▓▒░ npm run print-opt                   ░▒▓ ✔  2.7.2   10:22:37  
+
+> v8-optimization@1.0.0 print-opt
+> node --print-opt-code example1.js
+
+--- Raw source ---
+/*
+  example for optimizing
+*/
+
+const ITRATIONS = 20000
+
+function myFunc(obj) {
+  return obj.x
+}
+// monomorphic
+const obj1 = { x: 1 }
+for (let i = 0; i < ITRATIONS; ++i) {
+  myFunc(obj1);
+}
+
+// // // polymorphic
+const obj2 = { x: true }
+for (let i = 0; i < ITRATIONS; ++i) {
+  myFunc(obj2);
+}
+
+// const obj3 = { x: ["1", "2"] }
+// for (let i = 0; i < ITRATIONS; ++i) {
+//   myFunc(obj3);
+// }
+
+// // // // megamorphic
+// const obj4 = { x: "String" }
+// for (let i = 0; i < ITRATIONS; ++i) {
+//   myFunc(obj4);
+// }
+
+
+
+--- Optimized code ---
+optimization_id = 0
+source_position = 0
+kind = OPTIMIZED_FUNCTION
+stack_slots = 15
+compiler = turbofan
+address = 0x20c275102fa1
+
+Instructions (size = 476)
+0x20c275103000     0  488b59c0       REX.W movq rbx,[rcx-0x40]
+0x20c275103004     4  f6430f01       testb [rbx+0xf],0x1
+0x20c275103008     8  740d           jz 0x20c275103017  <+0x17>
+0x20c27510300a     a  49ba0041a10001000000 REX.W movq r10,0x100a14100  (CompileLazyDeoptimizedCode)
+0x20c275103014    14  41ffe2         jmp r10
+0x20c275103017    17  55             push rbp
+0x20c275103018    18  4889e5         REX.W movq rbp,rsp
+0x20c27510301b    1b  56             push rsi
+0x20c27510301c    1c  57             push rdi
+0x20c27510301d    1d  48ba0000000021000000 REX.W movq rdx,0x2100000000
+0x20c275103027    27  49ba806ea30001000000 REX.W movq r10,0x100a36e80  (Abort)
+0x20c275103031    31  41ffd2         call r10
+0x20c275103034    34  cc             int3l
+0x20c275103035    35  4883ec18       REX.W subq rsp,0x18
+0x20c275103039    39  488975a8       REX.W movq [rbp-0x58],rsi
+0x20c27510303d    3d  488b55b8       REX.W movq rdx,[rbp-0x48]
+0x20c275103041    41  f6c201         testb rdx,0x1
+0x20c275103044    44  0f8523010000   jnz 0x20c27510316d  <+0x16d>
+0x20c27510304a    4a  488b4dd8       REX.W movq rcx,[rbp-0x28]
+0x20c27510304e    4e  f6c101         testb rcx,0x1
+0x20c275103051    51  0f8522010000   jnz 0x20c275103179  <+0x179>
+0x20c275103057    57  483bd1         REX.W cmpq rdx,rcx
+0x20c27510305a    5a  0f8d84000000   jge 0x20c2751030e4  <+0xe4>
+0x20c275103060    60  488b7dd0       REX.W movq rdi,[rbp-0x30]
+0x20c275103064    64  49b859b68f1de2280000 REX.W movq r8,0x28e21d8fb659    ;; object: 0x28e21d8fb659 <JSFunction myFunc (sfi = 0x28e230dfa869)>
+0x20c27510306e    6e  4c3bc7         REX.W cmpq r8,rdi
+0x20c275103071    71  0f850e010000   jnz 0x20c275103185  <+0x185>
+0x20c275103077    77  4c8b45c0       REX.W movq r8,[rbp-0x40]
+0x20c27510307b    7b  41f6c001       testb r8,0x1
+0x20c27510307f    7f  0f840c010000   jz 0x20c275103191  <+0x191>
+0x20c275103085    85  49b971b00feae2280000 REX.W movq r9,0x28e2ea0fb071    ;; object: 0x28e2ea0fb071 <Map(HOLEY_ELEMENTS)>
+0x20c27510308f    8f  4d3948ff       REX.W cmpq [r8-0x1],r9
+0x20c275103093    93  0f8504010000   jnz 0x20c27510319d  <+0x19d>
+0x20c275103099    99  4c8bca         REX.W movq r9,rdx
+0x20c27510309c    9c  49c1e920       REX.W shrq r9, 32
+0x20c2751030a0    a0  4183c101       addl r9,0x1
+0x20c2751030a4    a4  0f80ff000000   jo 0x20c2751031a9  <+0x1a9>
+0x20c2751030aa    aa  493b65e0       REX.W cmpq rsp,[r13-0x20] (external value (StackGuard::address_of_jslimit()))
+0x20c2751030ae    ae  0f863b000000   jna 0x20c2751030ef  <+0xef>
+0x20c2751030b4    b4  488bd1         REX.W movq rdx,rcx
+0x20c2751030b7    b7  48c1fa20       REX.W sarq rdx, 32
+0x20c2751030bb    bb  e903000000     jmp 0x20c2751030c3  <+0xc3>
+0x20c2751030c0    c0  4d8bcb         REX.W movq r9,r11
+0x20c2751030c3    c3  443bca         cmpl r9,rdx
+0x20c2751030c6    c6  0f8d18000000   jge 0x20c2751030e4  <+0xe4>
+0x20c2751030cc    cc  4d8bd9         REX.W movq r11,r9
+0x20c2751030cf    cf  4183c301       addl r11,0x1
+0x20c2751030d3    d3  0f80dc000000   jo 0x20c2751031b5  <+0x1b5>
+0x20c2751030d9    d9  493b65e0       REX.W cmpq rsp,[r13-0x20] (external value (StackGuard::address_of_jslimit()))
+0x20c2751030dd    dd  77e1           ja 0x20c2751030c0  <+0xc0>
+0x20c2751030df    df  e94a000000     jmp 0x20c27510312e  <+0x12e>
+0x20c2751030e4    e4  498b4520       REX.W movq rax,[r13+0x20] (root (undefined_value))
+0x20c2751030e8    e8  488be5         REX.W movq rsp,rbp
+0x20c2751030eb    eb  5d             pop rbp
+0x20c2751030ec    ec  c23000         ret 0x30
+0x20c2751030ef    ef  4c894d98       REX.W movq [rbp-0x68],r9
+0x20c2751030f3    f3  33c0           xorl rax,rax
+0x20c2751030f5    f5  48be210148a5e2280000 REX.W movq rsi,0x28e2a5480121    ;; object: 0x28e2a5480121 <NativeContext[239]>
+0x20c2751030ff    ff  48bb70c86e0001000000 REX.W movq rbx,0x1006ec870
+0x20c275103109   109  488bd0         REX.W movq rdx,rax
+0x20c27510310c   10c  4c8bde         REX.W movq r11,rsi
+0x20c27510310f   10f  49ba40a2a70001000000 REX.W movq r10,0x100a7a240  (CEntry_Return1_DontSaveFPRegs_ArgvOnStack_NoBuiltinExit)
+0x20c275103119   119  41ffd2         call r10
+0x20c27510311c   11c  488b4dd8       REX.W movq rcx,[rbp-0x28]
+0x20c275103120   120  488b7dd0       REX.W movq rdi,[rbp-0x30]
+0x20c275103124   124  4c8b45c0       REX.W movq r8,[rbp-0x40]
+0x20c275103128   128  4c8b4d98       REX.W movq r9,[rbp-0x68]
+0x20c27510312c   12c  eb86           jmp 0x20c2751030b4  <+0xb4>
+0x20c27510312e   12e  4c895d98       REX.W movq [rbp-0x68],r11
+0x20c275103132   132  488955a0       REX.W movq [rbp-0x60],rdx
+0x20c275103136   136  488b1dc4ffffff REX.W movq rbx,[rip+0xffffffc4]
+0x20c27510313d   13d  33c0           xorl rax,rax
+0x20c27510313f   13f  48be210148a5e2280000 REX.W movq rsi,0x28e2a5480121    ;; object: 0x28e2a5480121 <NativeContext[239]>
+0x20c275103149   149  4c8b15c1ffffff REX.W movq r10,[rip+0xffffffc1]
+0x20c275103150   150  41ffd2         call r10
+0x20c275103153   153  488b4dd8       REX.W movq rcx,[rbp-0x28]
+0x20c275103157   157  488b7dd0       REX.W movq rdi,[rbp-0x30]
+0x20c27510315b   15b  4c8b45c0       REX.W movq r8,[rbp-0x40]
+0x20c27510315f   15f  4c8b5d98       REX.W movq r11,[rbp-0x68]
+0x20c275103163   163  488b55a0       REX.W movq rdx,[rbp-0x60]
+0x20c275103167   167  e954ffffff     jmp 0x20c2751030c0  <+0xc0>
+0x20c27510316c   16c  90             nop
+0x20c27510316d   16d  49c7c500000000 REX.W movq r13,0x0      ;; debug: deopt position, script offset '255'
+                                                             ;; debug: deopt position, inlining id '-1'
+                                                             ;; debug: deopt reason 'not a Smi'
+                                                             ;; debug: deopt index 0
+0x20c275103174   174  e8e7ee0300     call 0x20c275142060     ;; eager deoptimization bailout
+0x20c275103179   179  49c7c501000000 REX.W movq r13,0x1      ;; debug: deopt position, script offset '255'
+                                                             ;; debug: deopt position, inlining id '-1'
+                                                             ;; debug: deopt reason 'not a Smi'
+                                                             ;; debug: deopt index 1
+0x20c275103180   180  e8dbee0300     call 0x20c275142060     ;; eager deoptimization bailout
+0x20c275103185   185  49c7c502000000 REX.W movq r13,0x2      ;; debug: deopt position, script offset '277'
+                                                             ;; debug: deopt position, inlining id '-1'
+                                                             ;; debug: deopt reason 'wrong call target'
+                                                             ;; debug: deopt index 2
+0x20c27510318c   18c  e8cfee0300     call 0x20c275142060     ;; eager deoptimization bailout
+0x20c275103191   191  49c7c503000000 REX.W movq r13,0x3      ;; debug: deopt position, script offset '93'
+                                                             ;; debug: deopt position, inlining id '0'
+                                                             ;; debug: deopt reason 'Smi'
+                                                             ;; debug: deopt index 3
+0x20c275103198   198  e8c3ee0300     call 0x20c275142060     ;; eager deoptimization bailout
+0x20c27510319d   19d  49c7c504000000 REX.W movq r13,0x4      ;; debug: deopt position, script offset '93'
+                                                             ;; debug: deopt position, inlining id '0'
+                                                             ;; debug: deopt reason 'wrong map'
+                                                             ;; debug: deopt index 4
+0x20c2751031a4   1a4  e8b7ee0300     call 0x20c275142060     ;; eager deoptimization bailout
+0x20c2751031a9   1a9  49c7c505000000 REX.W movq r13,0x5      ;; debug: deopt position, script offset '270'
+                                                             ;; debug: deopt position, inlining id '-1'
+                                                             ;; debug: deopt reason 'overflow'
+                                                             ;; debug: deopt index 5
+0x20c2751031b0   1b0  e8abee0300     call 0x20c275142060     ;; eager deoptimization bailout
+0x20c2751031b5   1b5  49c7c506000000 REX.W movq r13,0x6      ;; debug: deopt position, script offset '270'
+                                                             ;; debug: deopt position, inlining id '-1'
+                                                             ;; debug: deopt reason 'overflow'
+                                                             ;; debug: deopt index 6
+0x20c2751031bc   1bc  e89fee0300     call 0x20c275142060     ;; eager deoptimization bailout
+0x20c2751031c1   1c1  49c7c507000000 REX.W movq r13,0x7      ;; debug: deopt position, script offset '237'
+                                                             ;; debug: deopt position, inlining id '-1'
+                                                             ;; debug: deopt reason '(unknown)'
+                                                             ;; debug: deopt index 7
+0x20c2751031c8   1c8  e893ee0700     call 0x20c275182060     ;; lazy deoptimization bailout
+0x20c2751031cd   1cd  49c7c508000000 REX.W movq r13,0x8      ;; debug: deopt position, script offset '237'
+                                                             ;; debug: deopt position, inlining id '-1'
+                                                             ;; debug: deopt reason '(unknown)'
+                                                             ;; debug: deopt index 8
+0x20c2751031d4   1d4  e887ee0700     call 0x20c275182060     ;; lazy deoptimization bailout
+0x20c2751031d9   1d9  0f1f00         nop
+
+Source positions:
+ pc offset  position
+         0         0
+        39       255
+        60       277
+        77        93
+        99       270
+        aa       237
+        b4       255
+        cc       270
+        d9       237
+        e4       515
+        ef       237
+
+Inlined functions (count = 1)
+ 0x28e230dfa869 <SharedFunctionInfo myFunc>
+
+Deoptimization Input Data (deopt points = 9)
+ index  bytecode-offset    pc
+     0               52    NA 
+     1               52    NA 
+     2               52    NA 
+     3                0    NA 
+     4                0    NA 
+     5               63    NA 
+     6               63    NA 
+     7               67   11c 
+     8               67   153 
+
+Safepoints (size = 36)
+0x20c27510311c     11c   1c1  001001011000000 (sp -> fp)       7
+0x20c275103153     153   1cd  001001011000000 (sp -> fp)       8
+
+RelocInfo (size = 217)
+0x20c275103066  full embedded object  (0x28e21d8fb659 <JSFunction myFunc (sfi = 0x28e230dfa869)>)
+0x20c275103087  full embedded object  (0x28e2ea0fb071 <Map(HOLEY_ELEMENTS)>)
+0x20c2751030f7  full embedded object  (0x28e2a5480121 <NativeContext[239]>)
+0x20c275103141  full embedded object  (0x28e2a5480121 <NativeContext[239]>)
+0x20c27510316d  deopt script offset  (255)
+0x20c27510316d  deopt inlining id  (-1)
+0x20c27510316d  deopt reason  (not a Smi)
+0x20c27510316d  deopt index
+0x20c275103175  runtime entry  (eager deoptimization bailout)
+0x20c275103179  deopt script offset  (255)
+0x20c275103179  deopt inlining id  (-1)
+0x20c275103179  deopt reason  (not a Smi)
+0x20c275103179  deopt index
+0x20c275103181  runtime entry  (eager deoptimization bailout)
+0x20c275103185  deopt script offset  (277)
+0x20c275103185  deopt inlining id  (-1)
+0x20c275103185  deopt reason  (wrong call target)
+0x20c275103185  deopt index
+0x20c27510318d  runtime entry  (eager deoptimization bailout)
+0x20c275103191  deopt script offset  (93)
+0x20c275103191  deopt inlining id  (0)
+0x20c275103191  deopt reason  (Smi)
+0x20c275103191  deopt index
+0x20c275103199  runtime entry  (eager deoptimization bailout)
+0x20c27510319d  deopt script offset  (93)
+0x20c27510319d  deopt inlining id  (0)
+0x20c27510319d  deopt reason  (wrong map)
+0x20c27510319d  deopt index
+0x20c2751031a5  runtime entry  (eager deoptimization bailout)
+0x20c2751031a9  deopt script offset  (270)
+0x20c2751031a9  deopt inlining id  (-1)
+0x20c2751031a9  deopt reason  (overflow)
+0x20c2751031a9  deopt index
+0x20c2751031b1  runtime entry  (eager deoptimization bailout)
+0x20c2751031b5  deopt script offset  (270)
+0x20c2751031b5  deopt inlining id  (-1)
+0x20c2751031b5  deopt reason  (overflow)
+0x20c2751031b5  deopt index
+0x20c2751031bd  runtime entry  (eager deoptimization bailout)
+0x20c2751031c1  deopt script offset  (237)
+0x20c2751031c1  deopt inlining id  (-1)
+0x20c2751031c1  deopt reason  ((unknown))
+0x20c2751031c1  deopt index
+0x20c2751031c9  runtime entry  (lazy deoptimization bailout)
+0x20c2751031cd  deopt script offset  (237)
+0x20c2751031cd  deopt inlining id  (-1)
+0x20c2751031cd  deopt reason  ((unknown))
+0x20c2751031cd  deopt index
+0x20c2751031d5  runtime entry  (lazy deoptimization bailout)
+
+--- End code ---
+
+    ~/d/node-v8-optimization    main !5 ?8 ▓▒░                                     ░▒▓ ✔  2.7.2   10:54:53  

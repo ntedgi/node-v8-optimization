@@ -1,19 +1,22 @@
 #include <iostream>
 
-class Object
+class Point
 {
 public:
     int x;
+    int y;
 
-    Object(int i)
+    Point(int i, int j)
     {
         x = i;
+        y = j;
     }
 };
 
 int main()
 {
-    Object *obj = new Object(1);
-    std::cout << "Hello : " << obj->x << std::endl;
+    Point *obj1 = new Point(7, 5);
+    std::cout << "(" << obj1->x << "," << obj1->y << ")" << std::endl;
+    obj->z = 10;
     return 0;
 }

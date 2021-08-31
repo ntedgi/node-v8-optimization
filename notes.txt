@@ -1,0 +1,2 @@
+Tip #1: Don’t change object shape
+Tip #2: Keep function arguments constant

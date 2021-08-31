@@ -5,9 +5,10 @@
   "main": "example1.js",
   "scripts": {
     "opt": "node --trace-opt --trace-deopt example1.js",
-    "print-opt": "node --print-bytecode  example1.js>out.txt",
+    "print-opt": "node --print-code-verbose  prime.js",
     "optout": "node --trace-opt --trace-deopt example1.js",
-    "compile": "g++ -o object.cc"
+    "compile": "g++ -o point object.cc",
+    "byte-code": "node --print-code prime.js > result.txt"
   },
   "repository": {
     "type": "git",
